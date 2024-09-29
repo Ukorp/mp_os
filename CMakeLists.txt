@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(mp_os-main)
+project(mp_os)
 
 set(CMAKE_CXX_STANDARD 17)
 
