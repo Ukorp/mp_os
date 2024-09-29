@@ -1,0 +1,21 @@
+# ninja log v5
+1409	1425	1724421286897382653	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test	8889dfd760dddd80
+1341	1356	1724421286827382687	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch	f3a9025725d93ff8
+1391	1409	1724421286877382663	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install	be2fe546156ae8af
+1391	1409	1724421286877382663	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install	be2fe546156ae8af
+1374	1391	1724421286857382672	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build	41ac3816a5f6946a
+1356	1374	1724421286847382678	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure	38ed502424d4d915
+1321	1340	1724421286807382696	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update	f724a73df31d012
+1426	1449	1724421286917382644	CMakeFiles/googletest-populate-complete	df5415d4a7d24240
+1426	1449	1724421286917382644	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-done	df5415d4a7d24240
+1409	1425	1724421286897382653	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test	8889dfd760dddd80
+1356	1374	1724421286847382678	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure	38ed502424d4d915
+0	87	1724421285557383295	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-mkdir	e2b8e1e033e434a0
+0	87	1724421285557383295	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-mkdir	e2b8e1e033e434a0
+1321	1340	1724421286807382696	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update	f724a73df31d012
+1426	1449	1724421286917382644	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/CMakeFiles/googletest-populate-complete	df5415d4a7d24240
+87	1321	1724421286787382706	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-download	bac04791a212232
+1341	1356	1724421286827382687	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch	f3a9025725d93ff8
+1426	1449	1724421286917382644	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-done	df5415d4a7d24240
+87	1321	1724421286787382706	googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-download	bac04791a212232
+1374	1391	1724421286857382672	/home/ukorp/mp_os-main/out/build/Custom configure preset/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build	41ac3816a5f6946a

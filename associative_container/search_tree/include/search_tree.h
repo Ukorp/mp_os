@@ -1,0 +1,126 @@
+#ifndef MATH_PRACTICE_AND_OPERATING_SYSTEMS_SEARCH_TREE_H
+#define MATH_PRACTICE_AND_OPERATING_SYSTEMS_SEARCH_TREE_H
+
+#include <iostream>
+#include <functional>
+#include <stack>
+#include <vector>
+
+#include </home/ukorp/mp_os-main/allocator/allocator/include/allocator.h>
+#include </home/ukorp/mp_os-main/allocator/allocator/include/allocator_guardant.h>
+#include </home/ukorp/mp_os-main/associative_container/include/associative_container.h>
+#include </home/ukorp/mp_os-main/logger/logger/include/logger.h>
+#include </home/ukorp/mp_os-main/logger/logger/include/logger_guardant.h>
+#include </home/ukorp/mp_os-main/common/include/not_implemented.h>
+
+template<
+    typename tkey,
+    typename tvalue>
+class search_tree:
+    public associative_container<tkey, tvalue>,
+    protected allocator_guardant,
+    protected logger_guardant
+{
+
+public:
+    
+    struct __attribute__((unused)) common_node
+    {
+    
+    public:
+        
+        typename associative_container<tkey, tvalue>::key_value_pair *keys_and_values;
+        
+        common_node **subtrees;
+        
+        size_t virtual_size;
+    
+    public:
+    
+        common_node();
+        
+        virtual ~common_node() noexcept;
+        
+    };
+
+protected:
+    
+    std::function<int(tkey const &, tkey const &)> _keys_comparer;
+
+protected:
+    
+    logger *_logger;
+    
+    allocator *_allocator;
+
+protected:
+    
+    explicit search_tree(
+        std::function<int(tkey const &, tkey const &)> keys_comparer = std::less<tkey>(),
+        logger *logger = nullptr,
+        allocator *allocator = nullptr);
+    
+public:
+    
+    virtual std::vector<typename associative_container<tkey, tvalue>::key_value_pair> obtain_between(
+        tkey const &lower_bound,
+        tkey const &upper_bound,
+        bool lower_bound_inclusive,
+        bool upper_bound_inclusive) = 0;
+
+protected:
+    
+    [[nodiscard]] inline allocator *get_allocator() const final;
+    
+    [[nodiscard]] inline logger *get_logger() const final;
+    
+};
+
+//region search_tree<tkey, tvalue>::node implementation
+
+template<
+    typename tkey,
+    typename tvalue>
+search_tree<tkey, tvalue>::common_node::common_node()
+{
+    throw not_implemented("template<typename tkey, typename tvalue> search_tree<tkey, tvalue>::common_node::common_node()", "your code should be here...");
+}
+
+template<
+    typename tkey,
+    typename tvalue>
+search_tree<tkey, tvalue>::common_node::~common_node() noexcept
+{
+    throw not_implemented("template<typename tkey, typename tvalue> search_tree<tkey, tvalue>::common_node::~common_node() noexcept", "your code should be here...");
+}
+
+// endregion search_tree<tkey, tvalue>::node implementation
+
+template<
+    typename tkey,
+    typename tvalue>
+search_tree<tkey, tvalue>::search_tree(
+    std::function<int(tkey const &, tkey const &)> keys_comparer,
+    logger *logger,
+    allocator *allocator): _allocator(allocator), _logger(logger), _keys_comparer(keys_comparer)
+{
+
+}
+
+template<
+    typename tkey,
+    typename tvalue>
+[[nodiscard]] inline allocator *search_tree<tkey, tvalue>::get_allocator() const
+{
+    return nullptr;
+}
+
+template<
+    typename tkey,
+    typename tvalue>
+[[nodiscard]] inline logger *search_tree<tkey, tvalue>::get_logger() const
+{
+    return this->_logger;
+}
+
+#endif //MATH_PRACTICE_AND_OPERATING_SYSTEMS_SEARCH_TREE_H

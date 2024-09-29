@@ -1,0 +1,4 @@
+Name: nlohmann_json
+Description: JSON for Modern C++
+Version: 3.11.2
+Cflags: -I/home/ukorp/mp_os-main/out/install/Custom configure preset/include

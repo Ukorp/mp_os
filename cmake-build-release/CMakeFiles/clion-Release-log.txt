@@ -1,0 +1,5 @@
+/usr/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -G "Unix Makefiles" -S /home/ukorp/mp_os-main -B /home/ukorp/mp_os-main/cmake-build-release
+-- Using the multi-header code from /home/ukorp/mp_os-main/cmake-build-release/_deps/json-src/include/
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/ukorp/mp_os-main/cmake-build-release
