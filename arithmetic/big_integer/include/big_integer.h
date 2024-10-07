@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 #include <cstring>
-
+#include <algorithm>
 #include <allocator.h>
 #include <allocator_guardant.h>
 #include <not_implemented.h>
@@ -15,7 +15,7 @@ class big_integer final:
 {
 
 public:
-    
+
     enum class multiplication_rule
     {
         trivial,
@@ -24,60 +24,60 @@ public:
     };
 
 private:
-    
+
     class multiplication
     {
-    
+
     public:
-        
+
         virtual ~multiplication() noexcept = default;
-    
+
     public:
-        
+
         virtual big_integer &multiply(
             big_integer &first_multiplier,
             big_integer const &second_multiplier) const = 0;
-        
+
     };
-    
+
     class trivial_multiplication final:
         public multiplication
     {
-    
+
     public:
-        
+
         big_integer &multiply(
             big_integer &first_multiplier,
             big_integer const &second_multiplier) const override;
-        
+
     };
-    
+
     class Karatsuba_multiplication final:
         public multiplication
     {
 
     public:
-        
+
         big_integer &multiply(
             big_integer &first_multiplier,
             big_integer const &second_multiplier) const override;
-        
+
     };
-    
+
     class Schonhage_Strassen_multiplication final:
         public multiplication
     {
 
     public:
-        
+
         big_integer &multiply(
             big_integer &first_multiplier,
             big_integer const &second_multiplier) const override;
-        
+
     };
 
 public:
-    
+
     enum class division_rule
     {
         trivial,
@@ -86,89 +86,90 @@ public:
     };
 
 private:
-    
+
     class division
     {
-    
+
     public:
-        
+
         virtual ~division() noexcept = default;
-    
+
     public:
-        
+
         virtual big_integer &divide(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const = 0;
-        
+
         virtual big_integer &modulo(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const = 0;
-        
+
     };
-    
+
     class trivial_division final:
         public division
     {
-    
+
     public:
-        
+
         big_integer &divide(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const override;
-        
+
         big_integer &modulo(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const override;
-        
+
     };
-    
+
     class Newton_division final:
         public division
     {
-    
+
     public:
-        
+
         big_integer &divide(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const override;
-        
+
         big_integer &modulo(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const override;
-        
+
     };
-    
+
     class Burnikel_Ziegler_division final:
         public division
     {
-    
+
     public:
-        
+
         big_integer &divide(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const override;
-        
+
         big_integer &modulo(
             big_integer &dividend,
             big_integer const &divisor,
             big_integer::multiplication_rule multiplication_rule) const override;
-        
+
     };
 
 private:
 
-    int _oldest_digit;
-    unsigned int *_other_digits;
-    allocator *_allocator;
+    int _oldest_digit{};
+    unsigned int *_other_digits{};
+    allocator *_allocator{};
 
 public:
+    void copy(big_integer const &other);
 
     big_integer(
         int const *digits,
@@ -191,16 +192,16 @@ public:
 public:
 
     ~big_integer() noexcept;
-    
+
     big_integer(
         big_integer const &other);
 
     big_integer &operator=(
         big_integer const &other);
-    
+
     big_integer(
         big_integer &&other) noexcept;
-    
+
     big_integer &operator=(
         big_integer &&other) noexcept;
 
@@ -229,7 +230,7 @@ public:
 public:
 
     big_integer operator-() const;
-    
+
     big_integer &operator+=(
         big_integer const &other);
 
@@ -238,7 +239,7 @@ public:
 
     big_integer operator+(
         std::pair<big_integer, allocator *> const &other) const;
-    
+
     big_integer &operator-=(
         big_integer const &other);
 
@@ -247,7 +248,7 @@ public:
 
     big_integer operator-(
         std::pair<big_integer, allocator *> const &other) const;
-    
+
     big_integer &operator*=(
         big_integer const &other);
 
@@ -256,7 +257,7 @@ public:
 
     big_integer operator*(
         std::pair<big_integer, allocator *> const &other) const;
-    
+
     big_integer &operator/=(
         big_integer const &other);
 
@@ -367,20 +368,46 @@ public:
         big_integer::multiplication_rule multiplication_rule = big_integer::multiplication_rule::trivial);
 
 public:
-    
+
     friend std::ostream &operator<<(
         std::ostream &stream,
         big_integer const &value);
-    
+
     friend std::istream &operator>>(
         std::istream &stream,
         big_integer &value);
 
-private:
+public: // must be private
 
     [[nodiscard]] allocator *get_allocator() const noexcept override;
 
     std::vector<unsigned int> convert_to_base(std::string const &value_as_string, size_t base);
+
+    static std::vector<unsigned int> divide_str_on_int(std::string str, int position);
+
+    static std::string string_plus(std::string const &first, std::string const &second);
+
+    big_integer &change_sign();
+
+    bool is_negative() const;
+
+    static void swap(big_integer &first, big_integer &second) noexcept;
+
+    unsigned int digits_count() const;
+
+    unsigned int get_digit(unsigned int position) const;
+
+    unsigned int &get_link(unsigned int position);
+
+    static std::string multiply_string(std::string first, std::string second);
+
+    [[nodiscard]] std::string to_string() const;
+
+    static std::string string_plus_with_reverse(std::string first, std::string second);
+
+    static void print_bytes(unsigned int i);
+
+    std::vector<unsigned int> big_integer_to_vector(big_integer const &number) const;
 
     std::vector<unsigned int> str_to_vectorint(std::string str, int position);
 };
