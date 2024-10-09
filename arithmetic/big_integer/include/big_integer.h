@@ -171,6 +171,8 @@ private:
 public:
     void copy(big_integer const &other);
 
+    void move(big_integer &&other);
+
     big_integer(
         int const *digits,
         size_t digits_count,
@@ -408,6 +410,22 @@ public: // must be private
     static void print_bytes(unsigned int i);
 
     std::vector<unsigned int> big_integer_to_vector(big_integer const &number) const;
+
+    bool is_zero() const;
+
+    std::vector<unsigned int> vector_x_int(std::vector<unsigned int> vec, unsigned int);
+
+    static int greater_vectors(std::vector<unsigned int> &first, std::vector<unsigned int> &second);
+
+    static void left_swipe(unsigned int &number, unsigned int &left_number, unsigned int &right_number);
+
+    static void right_swipe(unsigned int &number, unsigned int &left_number, unsigned int &right_number);
+
+    static big_integer get_mask(unsigned int bites, int shift);
+
+    big_integer first_bytes(unsigned int n);
+
+    unsigned int bytes_count(unsigned int n);
 
     std::vector<unsigned int> str_to_vectorint(std::string str, int position);
 };

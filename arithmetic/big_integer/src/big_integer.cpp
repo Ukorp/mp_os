@@ -86,6 +86,23 @@ void big_integer::copy(big_integer const& other) {
     std::memcpy(_other_digits, other._other_digits, sizeof(unsigned int) * (*other._other_digits));
 }
 
+void big_integer::move(big_integer && other) {
+    if (_other_digits != nullptr) {
+        deallocate_with_guard(_other_digits);
+        _other_digits = nullptr;
+    }
+    _oldest_digit = other._oldest_digit;
+    if (other._other_digits == nullptr) {
+        _other_digits = nullptr;
+        return;
+    }
+    _allocator = other._allocator;
+    other._allocator = nullptr;
+    _other_digits = static_cast<unsigned int *>(allocate_with_guard(sizeof(unsigned int), *other._other_digits));
+
+    std::memmove(_other_digits, other._other_digits, sizeof(unsigned int) * (*other._other_digits));
+}
+
 big_integer::big_integer(
     int const *digits,
     size_t digits_count,
@@ -165,6 +182,7 @@ big_integer::big_integer(
     allocator *allocator): _allocator(allocator)
 {
     _other_digits = nullptr;
+
     unsigned int digits_count = digits.size();
     if (digits.empty()) {
         throw std::logic_error("Integer array must be not null");
@@ -180,6 +198,7 @@ big_integer::big_integer(
     else {
         return;
     }
+
     *_other_digits = digits_count;
     for (unsigned int i = 0; i < digits_count - 1; i++) {
         _other_digits[i + 1] = digits[i];
@@ -214,26 +233,24 @@ big_integer &big_integer::operator=(
     if (this == &other) {
         return *this;
     }
-    copy(other);
 
+    copy(other);
     return *this;
 }
 
 big_integer::big_integer(
     big_integer &&other) noexcept
 {
-    copy(other);
-    other.~big_integer();
+    move(std::move(other));
 }
 
 big_integer &big_integer::operator=(
     big_integer &&other) noexcept
 {
-
     if (this == &other) {
         return *this;
     }
-    copy(other);
+    move(std::move(other));
     return *this;
 }
 
@@ -336,7 +353,9 @@ big_integer big_integer::operator-() const
 big_integer &big_integer::operator+=(
     big_integer const &other)
 {
-    *this = *this + other;
+    big_integer tmp(*this);
+    tmp = *this + other;
+    *this = tmp;
     return *this;
 }
 
@@ -359,6 +378,8 @@ big_integer big_integer::operator+(
         copy1.change_sign();
         return copy2 - copy1;
     }
+    if (copy1.is_zero()) return copy2;
+    if (copy2.is_zero()) return copy1;
 
     const unsigned int first = copy1.digits_count();
     const unsigned int second = copy2.digits_count();
@@ -451,19 +472,66 @@ big_integer big_integer::operator-(
 big_integer &big_integer::operator*=(
     big_integer const &other)
 {
-    throw not_implemented("big_integer &big_integer::operator*=(big_integer const &)", "your code should be here...");
+
+    big_integer tmp = *this * other;
+    *this = tmp;
+    return *this;
 }
 
 big_integer big_integer::operator*(
     big_integer const &other) const
 {
-    throw not_implemented("big_integer big_integer::operator*(big_integer const &) const", "your code should be here...");
+
+    big_integer copy1(*this);
+    big_integer copy2(other);
+    unsigned int shift = sizeof(unsigned int) << 2;
+    unsigned int mask = (1U << shift) - 1;
+    big_integer sum_result("0");
+
+    if (is_negative()) {
+        copy1.change_sign();
+    }
+    if (other.is_negative()) {
+        copy2.change_sign();
+    }
+    if (copy1 == sum_result || copy2 == sum_result) return sum_result;
+
+
+    unsigned int result_num = 0;
+    for (int i = 0; i < 2 * copy1.digits_count(); ++i) {
+        unsigned int first_digit = copy1.get_digit(i / 2);
+        unsigned int current_digit = (first_digit >> (shift * ((i + 2) % 2))) & mask;
+        result_num = 0;
+        for (int j = 0; j < 2 * copy2.digits_count(); ++j) {
+            std::vector<unsigned int> tmp_vector;
+            unsigned int second_digit = copy2.get_digit(j / 2);
+            unsigned int multiply_digit = (second_digit >> (shift * ((j + 2) % 2))) & mask;
+            result_num += current_digit * multiply_digit;
+            tmp_vector.push_back(result_num & mask);
+            result_num >>= shift;
+            big_integer tmp(tmp_vector, _allocator);
+            tmp <<= shift * (i + j);
+            sum_result += tmp;
+
+        }
+        if (result_num) {
+            big_integer last(std::to_string(result_num & mask));
+            last <<= shift * (2 * copy2.digits_count() + i);
+            sum_result += last;
+        }
+    }
+    if (is_negative() ^ other.is_negative()) {
+        sum_result.change_sign();
+    }
+    return sum_result;
 }
 
 big_integer big_integer::operator*(
     std::pair<big_integer, allocator *> const &other) const
 {
-    throw not_implemented("big_integer big_integer::operator*(std::pair<big_integer, allocator *> const &) const", "your code should be here...");
+    big_integer result(*this * other.first);
+    result._allocator = other.second;
+    return result;
 }
 
 big_integer &big_integer::operator/=(
@@ -475,7 +543,73 @@ big_integer &big_integer::operator/=(
 big_integer big_integer::operator/(
     big_integer const &other) const
 {
-    throw not_implemented("big_integer big_integer::operator/(big_integer const &) const", "your code should be here...");
+    big_integer copy1(*this);
+    big_integer copy2(other);
+    big_integer result("0");
+    big_integer local_result("0");
+
+    unsigned int byte = 1 << 3;
+    int i = 1;
+    bool need_to_stop = false;
+
+    while (copy1.first_bytes(i).is_zero()) {
+        ++i;
+    }
+    // print_bytes(get_digit(0));
+    // print_bytes(get_digit(1));
+    // print_bytes(get_digit(2));
+    // print_bytes(copy2.get_digit(0));
+    // std::cout << "\nnext\n\n";
+    // print_bytes(copy2.get_digit(0));
+
+    big_integer tmp("0");
+    while (!copy1.is_zero()) {
+        if (i * 8 > copy1.digits_count() * 32) {
+            break;
+        }
+        tmp = copy1.first_bytes(i);
+
+        unsigned int one_plus = 0;
+        while ((tmp | local_result) < copy2) {
+            ++i;
+            if (i * 8 > copy1.digits_count() * 32) {
+                break;
+            }
+            local_result <<= 1 << 3;
+            result <<= 1 << 3;
+
+            tmp = copy1.first_bytes(i);
+            if (tmp.is_negative()) throw std::logic_error("this is negative??");
+
+
+        }
+        if ((tmp | local_result) < copy2) {
+            return result;
+        }
+        // print_bytes(tmp.get_digit(0));
+        local_result |= tmp;
+        while (local_result >= copy2) {
+            local_result -= copy2;
+            ++one_plus;
+        }
+
+        big_integer mask("1");
+        mask <<= (i << 3);
+        mask -= big_integer("1");
+        mask <<= (sizeof(unsigned int) << 3) * copy1.digits_count() - (i << 3);
+        unsigned int size = copy1.digits_count();
+        // print_bytes(copy1.get_digit(copy1.digits_count() - 1));
+        // std::cout << "this is need: "; print_bytes(tmp.get_digit(0));
+        // print_bytes(mask.get_digit(copy1.digits_count() - 1));
+        copy1 &= ~mask;
+        if (copy1.digits_count() < size) {
+            i = 1;
+        }
+        result += big_integer(std::to_string(one_plus));
+    }
+    // print_bytes(copy1.first_bytes(i++).get_digit(0));
+
+    return result;
 }
 
 big_integer big_integer::operator/(
@@ -531,6 +665,10 @@ big_integer big_integer::operator&(
     while (digits.back() == 0 && digits.size() > 1) {
         digits.pop_back();
     }
+    if (!is_negative() && (digits.back() &  (1 << (sizeof(unsigned int) << 3) - 1))) {
+        digits.push_back(0);
+    }
+
     return {digits, _allocator};
 }
 
@@ -626,9 +764,11 @@ big_integer big_integer::operator<<(
 {
     unsigned int number = 0;
     int count = 0;
+
     while (shift >= (sizeof(unsigned int) << 3)) {
-        ++count;
-        shift -= (sizeof(unsigned int) << 3);
+        count = shift / (sizeof(unsigned int) << 3);
+        shift = shift % (sizeof(unsigned int) << 3);
+
     }
     unsigned int mask = ((1 << shift) - 1) << ((sizeof(unsigned int) << 3) - shift);
     std::vector<unsigned int> answer_vec;
@@ -653,6 +793,9 @@ big_integer big_integer::operator<<(
     if (number) answer_vec.push_back(number);
     if (is_negative()) {
         answer_vec.back() ^= 1 << (sizeof(unsigned int) << 3) - 1;
+    }
+    if (!is_negative() && ((answer_vec.back()) & (1 << (sizeof(unsigned int) << 3) - 1))) {
+        answer_vec.push_back(0);
     }
     return {answer_vec, _allocator};
 }
@@ -679,8 +822,11 @@ big_integer big_integer::operator>>(
     unsigned int number = 0;
     unsigned int mask = (1 << shift) - 1;
     std::vector<unsigned int> answer_vec;
+    if (is_zero()) {
+        return *this;
+    }
     if (is_negative()) {
-        answer_vec = big_integer_to_vector(- *this);
+        answer_vec = big_integer_to_vector(*this);
     }
     else {
         answer_vec = big_integer_to_vector(*this);
@@ -718,7 +864,8 @@ big_integer &big_integer::multiply(
     allocator *allocator,
     big_integer::multiplication_rule multiplication_rule)
 {
-    throw not_implemented("big_integer &big_integer::multiply(big_integer &, big_integer const &, allocator *, big_integer::multiplication_rule)", "your code should be here...");
+
+    return first_multiplier *= second_multiplier;
 }
 
 big_integer big_integer::multiply(
@@ -727,7 +874,7 @@ big_integer big_integer::multiply(
     allocator *allocator,
     big_integer::multiplication_rule multiplication_rule)
 {
-    throw not_implemented("big_integer big_integer::multiply(big_integer const &, big_integer const &, allocator *, big_integer::multiplication_rule)", "your code should be here...");
+    return first_multiplier * second_multiplier;
 }
 
 big_integer &big_integer::divide(
@@ -944,15 +1091,21 @@ unsigned int &big_integer::get_link(unsigned int position){
 unsigned int big_integer::get_digit(unsigned int position) const {
     if (_other_digits == nullptr) {
         if (position == 0) {
-            return _oldest_digit;
+            return static_cast<unsigned int>(_oldest_digit);
         }
-        throw std::out_of_range("big_integer::index_of: out of range");
+        throw std::out_of_range("big_integer::index_of: out of range (" +
+            std::to_string(position) +
+            " with size " +
+            std::to_string(digits_count()) + ")");
     }
     if (position >= *_other_digits) {
-        throw std::out_of_range("big_integer::index_of: out of range");
+        throw std::out_of_range("big_integer::index_of: out of range (" +
+            std::to_string(position) +
+            " with size " +
+            std::to_string(digits_count()) + ")");
     }
     return (*_other_digits == position + 1) ?
-        _oldest_digit :
+        static_cast<unsigned int>(_oldest_digit ):
         _other_digits[position + 1];
 }
 
@@ -1040,3 +1193,60 @@ std::vector<unsigned int> big_integer::big_integer_to_vector(big_integer const &
     while (result.back() == 0 && result.size() > 1) result.pop_back();
     return result;
 }
+
+bool big_integer::is_zero() const{
+    if (digits_count() == 1 && get_digit(0) == 0) {
+        return true;
+    }
+    return false;
+}
+
+std::vector<unsigned int> big_integer::vector_x_int(std::vector<unsigned int> vec, unsigned int num) {
+    std::vector<unsigned int> result;
+    unsigned int const max_int = -1;
+    size_t base = static_cast<size_t>(max_int) + 1;
+    std::reverse(vec.begin(), vec.end());
+    unsigned int additional_number = 0;
+    for(int i = 0; i < vec.size(); ++i)
+    {
+        size_t local_result = static_cast<size_t>(vec[i]) * static_cast<size_t>(num) + additional_number;
+        result.push_back(local_result % base);
+        additional_number = local_result / base;
+    }
+    if(additional_number)
+        result.push_back(additional_number);
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+
+big_integer big_integer::get_mask(unsigned int bites, int shift) {
+    big_integer result("1");
+    result <<= bites;
+    result -= big_integer("1");
+    if (shift < 0) shift = 0;
+    return result << (shift << 3);
+}
+
+big_integer big_integer::first_bytes(unsigned int n) {
+    n <<= 3;
+    if (n > digits_count() * (sizeof(unsigned int) << 3)) throw std::logic_error("some problems");
+    big_integer mask("1");
+    mask <<= n;
+    mask -= big_integer("1");
+    mask = mask << (sizeof(unsigned int) << 3) * digits_count() - n;
+    return ((*this) & mask) >> ((sizeof(unsigned int) << 3) * digits_count() - n);
+}
+
+unsigned int big_integer::bytes_count(unsigned int n) {
+    big_integer number(*this);
+    int i = 0;
+    while (!number.is_zero()) {
+        number >>= 8;
+        ++i;
+    }
+    return i;
+}
+
+// void big_integer::right_shift(std::vector<unsigned int> &vec, unsigned int n) {
+//     for
+// }
