@@ -1,13 +1,8 @@
 #include <gtest/gtest.h>
-#include </home/ukorp/mp_os-main/associative_container/search_tree/binary_search_tree/AVL_tree/include/AVL_tree.h>
-#include </home/ukorp/mp_os-main/logger/logger/include/logger_builder.h>
-#include </home/ukorp/mp_os-main/logger/client_logger/include/client_logger_builder.h>
+#include <AVL_tree.h>
+#include <logger_builder.h>
+#include <client_logger_builder.h>
 #include <iostream>
-#include </home/ukorp/mp_os-main/allocator/allocator/src/allocator_guardant.cpp>
-#include </home/ukorp/mp_os-main/logger/logger/src/logger_builder.cpp>
-#include </home/ukorp/mp_os-main/logger/logger/src/logger.cpp>
-#include </home/ukorp/mp_os-main/logger/client_logger/src/client_logger_builder.cpp>
-#include </home/ukorp/mp_os-main/logger/client_logger/src/client_logger.cpp>
 
 logger *create_logger(
     std::vector<std::pair<std::string, logger::severity>> const &output_file_streams_setup,

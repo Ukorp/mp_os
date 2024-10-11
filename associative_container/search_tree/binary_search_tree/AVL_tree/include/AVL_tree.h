@@ -1,7 +1,7 @@
 #ifndef MATH_PRACTICE_AND_OPERATING_SYSTEMS_AVL_TREE_H
 #define MATH_PRACTICE_AND_OPERATING_SYSTEMS_AVL_TREE_H
 
-#include </home/ukorp/mp_os-main/associative_container/search_tree/binary_search_tree/include/binary_search_tree.h>
+#include <binary_search_tree.h>
 
 template<
     typename tkey,
