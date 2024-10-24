@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	db.insert_table("pl", "new_schema", "tbl", table());
 	for (int i = 3; i < 10; ++i)
 	{
-	    db.insert_data("pl", "new_schema", "tbl", std::string{"key"} + std::to_string(i), person_data(i, "Robsoon", "BBBAt"));
+	    db.insert_data("pl", "new_schema", "tbl", std::string{"key"} + std::to_string(i), person_data(i, "one", "two"));
 	    db.dispose_person("pl", "new_schema", "tbl", std::string{"key"} + std::to_string(i));
 	}
 
