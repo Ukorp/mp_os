@@ -1,0 +1,5 @@
+/mnt/d/CWOS/cmake-build-debug/CMakeFiles/CWOS.dir
+/mnt/d/CWOS/cmake-build-debug/CMakeFiles/edit_cache.dir
+/mnt/d/CWOS/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/mnt/d/CWOS/cmake-build-debug/_deps/json-build/CMakeFiles/edit_cache.dir
+/mnt/d/CWOS/cmake-build-debug/_deps/json-build/CMakeFiles/rebuild_cache.dir
